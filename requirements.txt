@@ -1,0 +1,8 @@
+Django>=5.2.16,<5.3
+gunicorn>=23.0
+whitenoise>=6.9
+Pillow>=12.3
+# HEIC/HEIF support. Phones shoot HEIC by default; Pillow cannot read it alone.
+# The manylinux wheel bundles libheif, so no apt packages are needed.
+pillow-heif>=1.5
+requests>=2.32

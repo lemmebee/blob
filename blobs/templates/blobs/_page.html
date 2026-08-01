@@ -1,0 +1,10 @@
+{% for blob in page %}
+  {% include "blobs/_blob.html" %}
+{% empty %}
+  <p class="empty">Nothing here yet. First blob goes above.</p>
+{% endfor %}
+
+{% if page.has_next %}
+  {# Sentinel: blob.js loads the next page when this scrolls into view. #}
+  <div class="sentinel" data-next="?page={{ page.next_page_number }}"></div>
+{% endif %}

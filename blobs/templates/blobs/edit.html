@@ -1,0 +1,50 @@
+{% extends "blobs/base.html" %}
+
+{% block title %}Edit · blob{% endblock %}
+
+{% block nav %}
+  <a class="icon-btn" href="{% url 'blobs:detail' blob.pk %}" aria-label="Back to the blob">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 12H5M11.2 5.4L4.6 12l6.6 6.6"/></svg>
+  </a>
+{% endblock %}
+
+{% block content %}
+{# The shared widget calls itself "New blob"; here it is not. #}
+<form class="composer editing" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.text }}
+
+  {% if blob.images.all %}
+    {% comment %}
+    Removal is a checkbox per image, so this page still works with no
+    JavaScript. Ticking one crosses it out; nothing is deleted until you save.
+    {% endcomment %}
+    <div class="kept">
+      {% for item in blob.images.all %}
+        <label class="keep">
+          <input type="checkbox" name="remove_images" value="{{ item.pk }}">
+          <img alt="" src="{{ item.display_url }}">
+          <span class="keep-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </span>
+        </label>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="attachments"></div>
+
+  <div class="composer-actions">
+    <label class="icon-btn" for="{{ form.images.id_for_label }}" title="Attach images">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="4.6" width="17.6" height="14.8" rx="2.6"/><circle cx="8.6" cy="9.8" r="1.7"/><path d="M4 16.6l4.6-4.2 3.4 3 3-2.6 5 4.4"/></svg>
+    </label>
+    {{ form.images }}
+    <a class="btn ghost" href="{% url 'blobs:detail' blob.pk %}">Cancel</a>
+    <button class="btn primary" type="submit">Save</button>
+  </div>
+
+  {% for error in form.non_field_errors %}<p class="error">{{ error }}</p>{% endfor %}
+  {% for error in form.text.errors %}<p class="error">{{ error }}</p>{% endfor %}
+  {% for error in form.images.errors %}<p class="error">{{ error }}</p>{% endfor %}
+</form>
+{% endblock %}

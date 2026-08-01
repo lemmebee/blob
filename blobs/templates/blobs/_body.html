@@ -1,0 +1,31 @@
+{% comment %}
+The contents of a blob as read on its own page: no clamp, full-size images,
+the link card is a real link. Used for the blob itself and for each sub-blob.
+{% endcomment %}
+{% if blob.text %}<div class="text">{{ blob.text }}</div>{% endif %}
+
+{% for item in blob.images.all %}
+  <a class="full-shot" href="{{ item.image.url }}"
+     aria-label="View attachment {{ forloop.counter }} full size">
+    <img loading="lazy" alt="" src="{{ item.display_url }}">
+  </a>
+{% endfor %}
+
+{% if blob.url %}
+  <div class="link">
+    {% if blob.is_video %}
+      <button class="player" type="button" data-embed="{{ blob.embed_url }}">
+        {% if blob.preview_image %}<img loading="lazy" alt="" src="{{ blob.preview_image.url }}">{% endif %}
+        <span class="play" aria-label="Play"></span>
+      </button>
+    {% elif blob.preview_image %}
+      <img class="shot" loading="lazy" alt="" src="{{ blob.preview_image.url }}">
+    {% endif %}
+    <a class="link-meta" href="{{ blob.url }}" rel="noopener noreferrer nofollow" target="_blank">
+      {% if blob.site_name %}<span class="site">{{ blob.site_name }}</span>{% endif %}
+      <span class="title">{{ blob.title|default:blob.url }}</span>
+      {% if blob.description %}<span class="desc">{{ blob.description }}</span>{% endif %}
+      <span class="raw">{{ blob.url }}</span>
+    </a>
+  </div>
+{% endif %}
