@@ -16,10 +16,13 @@ class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
 
 
-class MultipleFileField(forms.FileField):
-    """Django's FileField cleans one upload; this cleans the whole batch.
+class MultipleImageField(forms.ImageField):
+    """Django's ImageField cleans one upload; this cleans the whole batch.
 
-    There is no built-in multi-file field, only this documented recipe.
+    There is no built-in multi-file field, only this documented recipe. It is
+    based on ImageField, not FileField, so every upload is decoded by Pillow
+    before it is stored: `accept="image/*"` is only a browser hint, and the
+    files end up served from our own origin.
     """
 
     def __init__(self, *args, **kwargs):
@@ -36,7 +39,7 @@ class MultipleFileField(forms.FileField):
 class BlobForm(forms.ModelForm):
     """One box takes everything: text, a pasted link, any number of images."""
 
-    images = MultipleFileField(required=False)
+    images = MultipleImageField(required=False)
 
     class Meta:
         model = Blob
@@ -94,11 +97,14 @@ class BlobForm(forms.ModelForm):
 
         url = ""
         if text and URL_ONLY.fullmatch(text):
-            try:
-                _validate_url(text)
-                url = text[:2000]
-            except forms.ValidationError:
-                url = ""
+            # Silently truncating would store a different link than the one
+            # typed, so an over-long URL stays text instead.
+            if len(text) <= Blob._meta.get_field("url").max_length:
+                try:
+                    _validate_url(text)
+                    url = text
+                except forms.ValidationError:
+                    url = ""
         # instance survives _post_clean, which only writes the Meta fields.
         self.instance.url = url
         cleaned["text"] = "" if url else text

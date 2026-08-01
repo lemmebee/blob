@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block content %}
+{# The shared widget calls itself "New blob"; here it is not. #}
 <form class="composer editing" method="post" enctype="multipart/form-data">
   {% csrf_token %}
   {{ form.text }}

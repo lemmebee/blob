@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Count, Prefetch
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,13 +17,16 @@ def _create(request, parent=None):
     if not form.is_valid():
         return form, None
 
-    blob = form.save(commit=False)
-    blob.parent = parent
-    blob.save()
-    for upload in form.cleaned_data["images"]:
-        BlobImage.objects.create(blob=blob, image=upload).build_thumb()
-    # Link metadata needs the row to exist and is best effort, so it runs after
-    # the blob is safely saved.
+    # All or nothing: a failure partway through the attachments would otherwise
+    # leave a blob in the feed carrying half of what was dropped on it.
+    with transaction.atomic():
+        blob = form.save(commit=False)
+        blob.parent = parent
+        blob.save()
+        for upload in form.cleaned_data["images"]:
+            BlobImage.objects.create(blob=blob, image=upload).build_thumb()
+    # Link metadata needs the row to exist and is best effort. It stays outside
+    # the transaction: it makes a network call, and SQLite has one writer.
     blob.fetch_preview()
     blob.save()
     return form, blob
@@ -82,13 +86,14 @@ def edit(request, pk):
     if request.method == "POST":
         form = BlobEditForm(request.POST, request.FILES, instance=blob)
         if form.is_valid():
-            blob = form.save(commit=False)
-            blob.edited = True
-            blob.save()
-            for image in blob.images.filter(pk__in=form.removed_ids()):
-                image.delete()
-            for upload in form.cleaned_data["images"]:
-                BlobImage.objects.create(blob=blob, image=upload).build_thumb()
+            with transaction.atomic():
+                blob = form.save(commit=False)
+                blob.edited = True
+                blob.save()
+                for image in blob.images.filter(pk__in=form.removed_ids()):
+                    image.delete()
+                for upload in form.cleaned_data["images"]:
+                    BlobImage.objects.create(blob=blob, image=upload).build_thumb()
             if blob.url != was:
                 # The link changed or went away; nothing derived from the old
                 # one is true any more.
@@ -100,6 +105,8 @@ def edit(request, pk):
         # A link blob keeps its URL in the box it was typed into.
         form = BlobEditForm(instance=blob, initial={"text": blob.text or blob.url})
 
+    # The shared widget announces itself as "New blob"; this box is not that.
+    form.fields["text"].widget.attrs["aria-label"] = "Blob contents"
     return render(request, "blobs/edit.html", {"blob": blob, "form": form})
 
 

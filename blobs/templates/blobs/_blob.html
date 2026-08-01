@@ -15,7 +15,8 @@ target site is a separate, explicit act, the arrow in the footer.
   {% if blob.text %}
     {% if blob.text|length > 800 %}
       {# Checkbox toggle, no JS: long text is clamped until asked for. #}
-      <input class="expand" type="checkbox" id="expand-{{ blob.pk }}">
+      <input class="expand" type="checkbox" id="expand-{{ blob.pk }}"
+             aria-label="Show the whole text">
       <div class="text clamped">{{ blob.text }}</div>
       <label class="expand-toggle" for="expand-{{ blob.pk }}"></label>
     {% else %}
@@ -71,11 +72,13 @@ target site is a separate, explicit act, the arrow in the footer.
     {% endif %}
     {% if blob.url %}
       <a class="icon-btn" href="{{ blob.url }}" target="_blank"
-         rel="noopener noreferrer nofollow" title="Open {{ blob.site_name|default:'link' }}">
+         rel="noopener noreferrer nofollow"
+         title="Open {{ blob.site_name|default:'link' }}"
+         aria-label="Open {{ blob.site_name|default:blob.url }} in a new tab">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4.8h5.2V10M19.2 4.8L11 13"/><path d="M18.4 14.6v3.6a2 2 0 0 1-2 2H5.8a2 2 0 0 1-2-2V7.6a2 2 0 0 1 2-2h3.6"/></svg>
       </a>
     {% endif %}
-    <a class="icon-btn" href="{% url 'blobs:edit' blob.pk %}" title="Edit">
+    <a class="icon-btn" href="{% url 'blobs:edit' blob.pk %}" title="Edit" aria-label="Edit this blob">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.8 19.2h3.4L18.6 8.8a1.9 1.9 0 0 0 0-2.7l-.7-.7a1.9 1.9 0 0 0-2.7 0L4.8 15.8z"/><path d="M14.4 7l2.6 2.6"/></svg>
     </a>
     <form method="post" action="{% url 'blobs:delete' blob.pk %}"

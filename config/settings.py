@@ -33,14 +33,21 @@ def _secret_key() -> str:
 SECRET_KEY = _secret_key()
 DEBUG = os.environ.get("DEBUG", "0") == "1"
 
+def _csv(name: str, default: str = "") -> list[str]:
+    """Split a comma-separated env var, trimming the spaces people leave in."""
+    return [
+        item.strip()
+        for item in os.environ.get(name, default).split(",")
+        if item.strip()
+    ]
+
+
 # Traefik routes any host whose first label is `blob` (blob.localhost,
 # blob.local, blob.<lan-ip>.nip.io), so the exact Host header is not knowable
 # here, and traefik is the only way in. Narrow this before exposing blob
 # outside the LAN.
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
-CSRF_TRUSTED_ORIGINS = [
-    origin for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if origin
-]
+ALLOWED_HOSTS = _csv("ALLOWED_HOSTS", "*")
+CSRF_TRUSTED_ORIGINS = _csv("CSRF_TRUSTED_ORIGINS")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -130,6 +137,10 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
 BLOB_MAX_TEXT_CHARS = int(os.environ.get("BLOB_MAX_TEXT_CHARS", 1_000_000))
 BLOB_MAX_IMAGE_BYTES = int(os.environ.get("BLOB_MAX_IMAGE_BYTES", 25 * 1024 * 1024))
 BLOB_THUMB_MAX_PX = 1200
+# Caps on what a link preview will pull down. <head> is always near the top of
+# a page, so there is no reason to read further.
+BLOB_MAX_PAGE_BYTES = int(os.environ.get("BLOB_MAX_PAGE_BYTES", 512 * 1024))
+BLOB_MAX_PREVIEW_BYTES = int(os.environ.get("BLOB_MAX_PREVIEW_BYTES", 5 * 1024 * 1024))
 BLOB_PAGE_SIZE = 20
 
 LOGGING = {

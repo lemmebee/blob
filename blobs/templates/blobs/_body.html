@@ -5,7 +5,8 @@ the link card is a real link. Used for the blob itself and for each sub-blob.
 {% if blob.text %}<div class="text">{{ blob.text }}</div>{% endif %}
 
 {% for item in blob.images.all %}
-  <a class="full-shot" href="{{ item.image.url }}">
+  <a class="full-shot" href="{{ item.image.url }}"
+     aria-label="View attachment {{ forloop.counter }} full size">
     <img loading="lazy" alt="" src="{{ item.display_url }}">
   </a>
 {% endfor %}

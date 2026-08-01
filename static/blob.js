@@ -32,7 +32,7 @@ document.addEventListener("submit", (event) => {
 
 // Hung off the button rather than the dialog's close event: the button fires
 // synchronously, so the form submits in the same task as the click.
-dialog?.querySelector('button[value="ok"]').addEventListener("click", () => {
+dialog?.querySelector('button[value="ok"]')?.addEventListener("click", () => {
   const form = pendingForm;
   pendingForm = null;
   if (!form) return;

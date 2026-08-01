@@ -169,7 +169,23 @@ a { color: inherit; text-decoration: none; }
 }
 .composer textarea::placeholder { color: var(--dim); }
 
-.file-input { display: none; }
+/* Visually gone, still focusable: display:none drops an input out of the tab
+   order, which would leave attaching an image mouse-only. */
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* The label is the visible control, so it wears the input's focus ring. */
+.icon-btn:has(+ .file-input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 .composer-actions {
   display: flex;
@@ -392,8 +408,9 @@ a { color: inherit; text-decoration: none; }
    50k-line paste. anywhere handles the first, the clamp handles the second. */
 .text {
   white-space: pre-wrap;
+  /* anywhere already breaks unbroken runs; word-break: break-word is
+     deprecated and adds nothing here. */
   overflow-wrap: anywhere;
-  word-break: break-word;
   hyphens: auto;
 }
 

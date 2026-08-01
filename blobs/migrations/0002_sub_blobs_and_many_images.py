@@ -21,6 +21,9 @@ def restore_images(apps, schema_editor):
     """Reverse: put the first attachment back on the blob itself."""
     Blob = apps.get_model("blobs", "Blob")
     BlobImage = apps.get_model("blobs", "BlobImage")
+    # kind is re-added with its default, so every row needs recomputing, not
+    # just the ones that had a picture: a link blob would come back as text.
+    Blob.objects.exclude(url="").update(kind="link")
     seen = set()
     # DISTINCT ON is Postgres only, and this app runs on SQLite.
     for image in BlobImage.objects.order_by("blob_id", "id"):

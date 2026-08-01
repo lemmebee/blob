@@ -1,7 +1,7 @@
 # blob
 
-A box you paste things into. Text of any length, images, links. They stack up
-in one reverse-chronological feed and stay there.
+A box you paste things into. Text up to the configured storage limit, images,
+links. They stack up in one reverse-chronological feed and stay there.
 
 Deployed from [homelab](../homelab) at `http://blob.localhost`
 (`http://blob.local` from the rest of the LAN).
@@ -88,15 +88,16 @@ the third-party iframe (youtube-nocookie, `referrerpolicy=no-referrer`) is
 created on click.
 
 **Limits are on disk, not on screen.** Text is unlimited to read but capped at
-1,000,000 characters to store; images at 25 MB each, with no cap on how many; a fetched page at 512 KB and a
-fetched thumbnail at 5 MB. All configurable, see below.
+1,000,000 characters to store; images at 25 MB each, with no cap on how many; a
+fetched page at 512 KB and a fetched thumbnail at 5 MB. Every one of those is a
+setting, see the table below.
 
 ## State
 
 Everything lives in `DATA_DIR` (`/data` in the container, the `blob-data`
 volume):
 
-```
+```text
 /data
 ├── blob.sqlite3     # blobs
 ├── secret_key       # generated on first boot if SECRET_KEY is unset
@@ -116,7 +117,9 @@ the above; `make clean` deletes the volume and there is no other copy.
 | `ALLOWED_HOSTS`         | `*`            | Traefik is the only ingress; narrow if exposed |
 | `CSRF_TRUSTED_ORIGINS`  | empty          | Comma separated, needed only behind HTTPS    |
 | `BLOB_MAX_TEXT_CHARS`   | `1000000`      | Rejects longer pastes                        |
-| `BLOB_MAX_IMAGE_BYTES`  | `26214400`     | 25 MB                                        |
+| `BLOB_MAX_IMAGE_BYTES`  | `26214400`     | 25 MB, per attached image                    |
+| `BLOB_MAX_PAGE_BYTES`   | `524288`       | How much of a page a link preview reads      |
+| `BLOB_MAX_PREVIEW_BYTES`| `5242880`      | Cap on a downloaded preview thumbnail        |
 | `WEB_CONCURRENCY`       | `3`            | gunicorn workers; SQLite serialises writers  |
 | `TZ`                    | `UTC`          | Timestamps in the feed                       |
 
@@ -133,7 +136,7 @@ delete blobs without touching the database.
 
 ## Layout
 
-```
+```text
 blob/
 ├── config/          # settings, root urls, wsgi
 ├── blobs/

@@ -88,7 +88,7 @@ class Blob(models.Model):
         self.embed_url = result.embed_url
         if result.image_bytes:
             self.preview_image.save(
-                f"{uuid.uuid4().hex}{Path(result.image_name).suffix.lower()[:10] or '.jpg'}",
+                f"{uuid.uuid4().hex}{result.image_suffix}",
                 ContentFile(result.image_bytes),
                 save=False,
             )
@@ -142,7 +142,14 @@ class BlobImage(models.Model):
                 mode = "RGBA" if image.mode in ("RGBA", "LA", "P") else "RGB"
                 buffer = BytesIO()
                 image.convert(mode).save(buffer, "WEBP", quality=82, method=4)
-        except (UnidentifiedImageError, OSError) as exc:
+        # A file can pass the byte-size cap and still decode to a few hundred
+        # megapixels, which Pillow refuses with DecompressionBombError. Letting
+        # that escape would leave an attachment with no thumbnail behind a 500.
+        except (
+            UnidentifiedImageError,
+            Image.DecompressionBombError,
+            OSError,
+        ) as exc:
             log.warning("thumbnail failed for image %s: %s", self.pk, exc)
             return
         self.thumb.save(
