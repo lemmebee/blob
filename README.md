@@ -1,10 +1,26 @@
+<div align="center">
+
+<img src="docs/mark.svg" width="80" alt="">
+
 # blob
 
-A box you paste things into. Text up to the configured storage limit, images,
-links. They stack up in one reverse-chronological feed and stay there.
+**A box you paste things into.**
 
-Deployed from [homelab](../homelab) at `http://blob.localhost`
-(`http://blob.local` from the rest of the LAN).
+Text up to the configured storage limit, images and links. They stack up in one
+reverse-chronological feed and stay there.
+
+<img src="https://img.shields.io/badge/Django-5.2-0C4B33?style=flat-square&logo=django&logoColor=white" alt="Django 5.2">
+<img src="https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.13">
+<img src="https://img.shields.io/badge/SQLite-single%20file-003B57?style=flat-square&logo=sqlite&logoColor=white" alt="SQLite">
+<img src="https://img.shields.io/badge/JS%20dependencies-0-6c8cff?style=flat-square" alt="Zero JavaScript dependencies">
+<img src="https://img.shields.io/badge/build%20step-none-6c8cff?style=flat-square" alt="No build step">
+
+<img src="docs/screenshot.png" width="100%" alt="The blob feed, dark theme on the left and light theme on the right: the composer at the top, a plain note, and a link card with its fetched preview.">
+
+</div>
+
+Runs in [homelab](../homelab) at `http://blob.localhost`, or `http://blob.local`
+from the rest of the LAN.
 
 ## One box
 
