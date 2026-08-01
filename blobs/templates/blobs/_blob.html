@@ -1,0 +1,89 @@
+{% comment %}
+One card, rendered in the feed and appended by blob.js.
+
+The whole card leads to the blob's own page, link blobs included: opening the
+target site is a separate, explicit act, the arrow in the footer.
+{% endcomment %}
+<article class="blob" id="blob-{{ blob.pk }}">
+  <a class="cover" href="{% url 'blobs:detail' blob.pk %}" aria-label="Open this blob"></a>
+
+  <header>
+    <time datetime="{{ blob.created_at|date:'c' }}">{{ blob.created_at|date:'j M Y, H:i' }}</time>
+    {% if blob.edited %}<span class="edited">edited</span>{% endif %}
+  </header>
+
+  {% if blob.text %}
+    {% if blob.text|length > 800 %}
+      {# Checkbox toggle, no JS: long text is clamped until asked for. #}
+      <input class="expand" type="checkbox" id="expand-{{ blob.pk }}">
+      <div class="text clamped">{{ blob.text }}</div>
+      <label class="expand-toggle" for="expand-{{ blob.pk }}"></label>
+    {% else %}
+      <div class="text">{{ blob.text }}</div>
+    {% endif %}
+  {% endif %}
+
+  {% with images=blob.images.all %}
+    {% if images %}
+      {% comment %}
+      The card shows at most four; the rest are one click away on the blob page.
+      Uploading is not capped, only this preview grid is.
+      {% endcomment %}
+      <div class="gallery{% if images|length > 1 %} multi{% endif %}">
+        {% for item in images|slice:":4" %}
+          {% if forloop.counter == 4 and images|length > 4 %}
+            <div class="tile more" data-more="+{{ images|length|add:'-4' }}">
+              <img loading="lazy" alt="" src="{{ item.display_url }}">
+            </div>
+          {% else %}
+            <div class="tile"><img loading="lazy" alt="" src="{{ item.display_url }}"></div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% if blob.url %}
+    <div class="link">
+      {% if blob.is_video %}
+        {# Click to play: no third-party iframe loads until you ask for it. #}
+        <button class="player" type="button" data-embed="{{ blob.embed_url }}">
+          {% if blob.preview_image %}<img loading="lazy" alt="" src="{{ blob.preview_image.url }}">{% endif %}
+          <span class="play" aria-label="Play"></span>
+        </button>
+      {% elif blob.preview_image %}
+        <img class="shot" loading="lazy" alt="" src="{{ blob.preview_image.url }}">
+      {% endif %}
+      <div class="link-meta">
+        {% if blob.site_name %}<span class="site">{{ blob.site_name }}</span>{% endif %}
+        <span class="title">{{ blob.title|default:blob.url }}</span>
+        {% if blob.description %}<span class="desc">{{ blob.description }}</span>{% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  <footer>
+    {% if blob.child_count %}
+      <span class="count" title="{{ blob.child_count }} sub-blob{{ blob.child_count|pluralize }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.6v8.2a3 3 0 0 0 3 3h7.4"/><path d="M14.2 12.4l3.6 3.4-3.6 3.4"/></svg>
+        {{ blob.child_count }}
+      </span>
+    {% endif %}
+    {% if blob.url %}
+      <a class="icon-btn" href="{{ blob.url }}" target="_blank"
+         rel="noopener noreferrer nofollow" title="Open {{ blob.site_name|default:'link' }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4.8h5.2V10M19.2 4.8L11 13"/><path d="M18.4 14.6v3.6a2 2 0 0 1-2 2H5.8a2 2 0 0 1-2-2V7.6a2 2 0 0 1 2-2h3.6"/></svg>
+      </a>
+    {% endif %}
+    <a class="icon-btn" href="{% url 'blobs:edit' blob.pk %}" title="Edit">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.8 19.2h3.4L18.6 8.8a1.9 1.9 0 0 0 0-2.7l-.7-.7a1.9 1.9 0 0 0-2.7 0L4.8 15.8z"/><path d="M14.4 7l2.6 2.6"/></svg>
+    </a>
+    <form method="post" action="{% url 'blobs:delete' blob.pk %}"
+          data-confirm="Delete this blob{% if blob.child_count %} and its {{ blob.child_count }} sub-blob{{ blob.child_count|pluralize }}{% endif %}? This cannot be undone.">
+      {% csrf_token %}
+      <button class="icon-btn danger" type="submit" aria-label="Delete blob">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.6 6.8h14.8M9.4 6.8V5.2a1.4 1.4 0 0 1 1.4-1.4h2.4a1.4 1.4 0 0 1 1.4 1.4v1.6"/><path d="M6.4 6.8l.9 12a1.6 1.6 0 0 0 1.6 1.5h6.2a1.6 1.6 0 0 0 1.6-1.5l.9-12"/><path d="M10.4 10.6v6M13.6 10.6v6"/></svg>
+      </button>
+    </form>
+  </footer>
+</article>

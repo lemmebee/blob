@@ -1,0 +1,61 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}blob{% endblock %}</title>
+  <meta name="color-scheme" content="dark light">
+  {# Applied before first paint, otherwise a light-theme user sees a dark flash. #}
+  <script>
+    try {
+      var saved = localStorage.getItem("blob-theme");
+      if (saved) document.documentElement.dataset.theme = saved;
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="{% static 'blob.css' %}">
+  {# The mark itself, inlined: one blob, no request, readable at 16px. #}
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path fill='rgb(108,140,255)' d='M16.6 2.4c5 .3 10.3 2.6 11.8 7.3 1.5 4.7-1.6 9.4-4.8 12.9-3.3 3.5-7.9 6.1-12.2 4.9C7 26.2 3.4 21.8 2.4 17.1 1.4 12.3 3.6 7.3 7.6 4.6c2.6-1.7 5.7-2.4 9-2.2z'/><circle cx='11.6' cy='11.4' r='2.6' fill='rgb(255,255,255)' opacity='.55'/></svg>">
+</head>
+<body>
+  <header class="bar">
+    {% block nav %}
+      <a class="brand" href="{% url 'blobs:feed' %}">
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16.6 2.4c5 .3 10.3 2.6 11.8 7.3 1.5 4.7-1.6 9.4-4.8 12.9-3.3 3.5-7.9 6.1-12.2 4.9C7 26.2 3.4 21.8 2.4 17.1 1.4 12.3 3.6 7.3 7.6 4.6c2.6-1.7 5.7-2.4 9-2.2z"/></svg>
+        blob
+      </a>
+    {% endblock %}
+    <button class="icon-btn theme" type="button" aria-label="Switch theme">
+      <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></svg>
+      <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.2 8.2 0 1 0 10.2 10.2z"/></svg>
+    </button>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+
+  {% comment %}
+  Confirmation lives in the page, not in a browser alert. Any form carrying
+  data-confirm routes through here; without JS the form just submits.
+  {% endcomment %}
+  {% comment %}
+  Images open over the page instead of navigating away. Without JS the anchor
+  still works and opens the file directly.
+  {% endcomment %}
+  <dialog class="lightbox" id="lightbox">
+    <img alt="">
+    <button class="icon-btn close" type="button" aria-label="Close">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </dialog>
+
+  <dialog class="modal" id="confirm">
+    <form method="dialog">
+      <p class="modal-text"></p>
+      <div class="modal-actions">
+        <button class="btn ghost" value="cancel" autofocus>Cancel</button>
+        <button class="btn destructive" value="ok">Delete</button>
+      </div>
+    </form>
+  </dialog>
+  <script src="{% static 'blob.js' %}" defer></script>
+</body>
+</html>

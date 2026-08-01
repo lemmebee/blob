@@ -1,0 +1,68 @@
+{% extends "blobs/base.html" %}
+
+{% block title %}{{ blob.title|default:"blob" }} · blob{% endblock %}
+
+{% block nav %}
+  <a class="icon-btn" href="{% url 'blobs:feed' %}" aria-label="Back to the feed">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 12H5M11.2 5.4L4.6 12l6.6 6.6"/></svg>
+  </a>
+{% endblock %}
+
+{% block content %}
+<article class="blob detail">
+  <header>
+    <time datetime="{{ blob.created_at|date:'c' }}">{{ blob.created_at|date:'j M Y, H:i' }}</time>
+    {% if blob.edited %}<span class="edited">edited</span>{% endif %}
+  </header>
+
+  {% include "blobs/_body.html" %}
+
+  <footer>
+    {% if blob.url %}
+      <a class="icon-btn" href="{{ blob.url }}" target="_blank"
+         rel="noopener noreferrer nofollow" title="Open {{ blob.site_name|default:'link' }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4.8h5.2V10M19.2 4.8L11 13"/><path d="M18.4 14.6v3.6a2 2 0 0 1-2 2H5.8a2 2 0 0 1-2-2V7.6a2 2 0 0 1 2-2h3.6"/></svg>
+      </a>
+    {% endif %}
+    <a class="icon-btn" href="{% url 'blobs:edit' blob.pk %}" title="Edit">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.8 19.2h3.4L18.6 8.8a1.9 1.9 0 0 0 0-2.7l-.7-.7a1.9 1.9 0 0 0-2.7 0L4.8 15.8z"/><path d="M14.4 7l2.6 2.6"/></svg>
+    </a>
+    <form method="post" action="{% url 'blobs:delete' blob.pk %}"
+          data-confirm="Delete this blob and everything under it? This cannot be undone.">
+      {% csrf_token %}
+      <button class="icon-btn danger" type="submit" aria-label="Delete blob">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.6 6.8h14.8M9.4 6.8V5.2a1.4 1.4 0 0 1 1.4-1.4h2.4a1.4 1.4 0 0 1 1.4 1.4v1.6"/><path d="M6.4 6.8l.9 12a1.6 1.6 0 0 0 1.6 1.5h6.2a1.6 1.6 0 0 0 1.6-1.5l.9-12"/><path d="M10.4 10.6v6M13.6 10.6v6"/></svg>
+      </button>
+    </form>
+  </footer>
+</article>
+
+{# Sub-blobs: same box, hung off this blob instead of the feed. #}
+<section class="thread">
+  {% for child in children %}
+    <article class="blob sub" id="blob-{{ child.pk }}">
+      <header>
+        <time datetime="{{ child.created_at|date:'c' }}">{{ child.created_at|date:'j M Y, H:i' }}</time>
+        {% if child.edited %}<span class="edited">edited</span>{% endif %}
+      </header>
+
+      {% include "blobs/_body.html" with blob=child %}
+
+      <footer>
+        <a class="icon-btn" href="{% url 'blobs:edit' child.pk %}" title="Edit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.8 19.2h3.4L18.6 8.8a1.9 1.9 0 0 0 0-2.7l-.7-.7a1.9 1.9 0 0 0-2.7 0L4.8 15.8z"/><path d="M14.4 7l2.6 2.6"/></svg>
+        </a>
+        <form method="post" action="{% url 'blobs:delete' child.pk %}"
+              data-confirm="Delete this sub-blob? This cannot be undone.">
+          {% csrf_token %}
+          <button class="icon-btn danger" type="submit" aria-label="Delete sub-blob">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.6 6.8h14.8M9.4 6.8V5.2a1.4 1.4 0 0 1 1.4-1.4h2.4a1.4 1.4 0 0 1 1.4 1.4v1.6"/><path d="M6.4 6.8l.9 12a1.6 1.6 0 0 0 1.6 1.5h6.2a1.6 1.6 0 0 0 1.6-1.5l.9-12"/><path d="M10.4 10.6v6M13.6 10.6v6"/></svg>
+          </button>
+        </form>
+      </footer>
+    </article>
+  {% endfor %}
+
+  {% include "blobs/_composer.html" %}
+</section>
+{% endblock %}
