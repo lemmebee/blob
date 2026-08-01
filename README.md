@@ -19,7 +19,7 @@ reverse-chronological feed and stay there.
 
 </div>
 
-Runs in [homelab](../homelab) at `http://blob.localhost`, or `http://blob.local`
+Runs in [homelab](https://github.com/lemmebee/homelab) at `http://blob.localhost`, or `http://blob.local`
 from the rest of the LAN.
 
 ## One box
